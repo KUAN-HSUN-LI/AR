@@ -10,6 +10,7 @@ REAL_A = np.array([0, 0, 0])
 REAL_B = np.array([0.275, 0.058, 0])
 REAL_C = np.array([0.21, -0.083, 0])
 CAMERA = np.array([0, 0, 1.04], dtype=float)
+img_height = FOCAL
 
 
 def get_args():
@@ -54,28 +55,29 @@ def calc_real_angle(pointA, pointO, pointB):
 
 def check_move(camera, moveX, moveY, moveZ):
     try:
+        check = 0
         img_angle_AOB = calc_img_angle(img_center, iconA, iconB, img_height)
         img_angle_BOC = calc_img_angle(img_center, iconB, iconC, img_height)
         img_angle_COA = calc_img_angle(img_center, iconC, iconA, img_height)
         temp_angle_AOB = calc_real_angle(REAL_A, CAMERA, REAL_B)
         temp_angle_BOC = calc_real_angle(REAL_B, CAMERA, REAL_C)
         temp_angle_COA = calc_real_angle(REAL_C, CAMERA, REAL_A)
-        temp_err = abs(img_angle_AOB - temp_angle_AOB) + abs(img_angle_BOC - temp_angle_BOC) + abs(img_angle_COA - temp_angle_COA)
+        temp_err = (img_angle_AOB - temp_angle_AOB)**2 + (img_angle_BOC - temp_angle_BOC)**2 + (img_angle_COA - temp_angle_COA)**2
         camera[0] += moveX
         camera[1] += moveY
         camera[2] += moveZ
-        new_angle_AOB = calc_real_angle(REAL_A, CAMERA, REAL_B)
-        new_angle_BOC = calc_real_angle(REAL_B, CAMERA, REAL_C)
-        new_angle_COA = calc_real_angle(REAL_C, CAMERA, REAL_A)
-        new_err = abs(img_angle_AOB - new_angle_AOB) + abs(img_angle_BOC - new_angle_BOC) + abs(img_angle_COA - new_angle_COA)
+        new_angle_AOB = calc_real_angle(REAL_A, camera, REAL_B)
+        new_angle_BOC = calc_real_angle(REAL_B, camera, REAL_C)
+        new_angle_COA = calc_real_angle(REAL_C, camera, REAL_A)
+        new_err = (img_angle_AOB - new_angle_AOB)**2 + (img_angle_BOC - new_angle_BOC)**2 + (img_angle_COA - new_angle_COA)**2
         if new_err < temp_err:
             return True
-    except:
+    except ValueError:
         return False
     return False
 
 
-F = sy.acos("-img_angle + ((x-a1)*(x-a2) + (y-b1)*(y-b2) + (z-c1)*(z-c2))/(((x-a1)**2+(y-b1)**2+(z-c1)**2)**(1/2) * ((x-a2)**2+(y-b2)**2+(z-c2)**2)**(1/2))")
+F = sy.acos("img_angle") - sy.acos("((x-a1)*(x-a2) + (y-b1)*(y-b2) + (z-c1)*(z-c2))/(((x-a1)**2+(y-b1)**2+(z-c1)**2)**(1/2) * ((x-a2)**2+(y-b2)**2+(z-c2)**2)**(1/2))")
 DIFFX = sy.diff(F, sy.Symbol('x'))
 DIFFY = sy.diff(F, sy.Symbol('y'))
 DIFFZ = sy.diff(F, sy.Symbol('z'))
@@ -135,15 +137,14 @@ if __name__ == "__main__":
             if check_move(CAMERA.copy(), 0, -step, 0):
                 CAMERA[1] -= step
             if check_move(CAMERA.copy(), 0, 0, step):
-                CAMERA[1] += step
+                CAMERA[2] += step
             if check_move(CAMERA.copy(), 0, 0, -step):
                 CAMERA[2] -= step
-
             if np.array_equal(CAMERA, temp_camera):
                 step *= 0.1
     elif args.mode == "differential":
-        lr = 0.1
-        for idx in range(300):
+        lr = 0.05
+        for idx in range(500):
             print(idx, end='\r')
             diffX = 0
             diffY = 0
@@ -162,9 +163,16 @@ if __name__ == "__main__":
             diffX += angle_diff(img_angle_COA, CAMERA, REAL_B, REAL_C, DIFFX) * (img_angle_COA - real_angle_COA)
             diffY += angle_diff(img_angle_COA, CAMERA, REAL_B, REAL_C, DIFFY) * (img_angle_COA - real_angle_COA)
             diffZ += angle_diff(img_angle_COA, CAMERA, REAL_B, REAL_C, DIFFZ) * (img_angle_COA - real_angle_COA)
-            CAMERA[0] += diffX * lr
-            CAMERA[1] += diffY * lr
-            CAMERA[2] += diffZ * lr
+            CAMERA[0] -= diffX * lr
+            CAMERA[1] -= diffY * lr
+            CAMERA[2] -= diffZ * lr
+    img_angle_AOB = calc_img_angle(img_center, iconA, iconB, FOCAL)
+    img_angle_BOC = calc_img_angle(img_center, iconB, iconC, FOCAL)
+    img_angle_COA = calc_img_angle(img_center, iconC, iconA, FOCAL)
+
+    real_angle_AOB = calc_real_angle(REAL_A, CAMERA, REAL_B)
+    real_angle_BOC = calc_real_angle(REAL_B, CAMERA, REAL_C)
+    real_angle_COA = calc_real_angle(REAL_C, CAMERA, REAL_A)
     print("A position:", REAL_A)
     print("B position:", REAL_B)
     print("C position:", REAL_C)
