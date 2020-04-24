@@ -111,11 +111,10 @@ if __name__ == "__main__":
     real_AB = calc_dist(REAL_A, REAL_B)
     S = FOCAL * (dist_AB + real_AB) / dist_AB
     CAMERA[2] = S
-    img_height = S * FOCAL / (S+FOCAL)
 
-    img_angle_AOB = calc_img_angle(img_center, iconA, iconB, img_height)
-    img_angle_BOC = calc_img_angle(img_center, iconB, iconC, img_height)
-    img_angle_COA = calc_img_angle(img_center, iconC, iconA, img_height)
+    img_angle_AOB = calc_img_angle(img_center, iconA, iconB, FOCAL)
+    img_angle_BOC = calc_img_angle(img_center, iconB, iconC, FOCAL)
+    img_angle_COA = calc_img_angle(img_center, iconC, iconA, FOCAL)
 
     real_angle_AOB = calc_real_angle(REAL_A, CAMERA, REAL_B)
     real_angle_BOC = calc_real_angle(REAL_B, CAMERA, REAL_C)
