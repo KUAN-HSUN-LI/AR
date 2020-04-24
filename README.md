@@ -1,10 +1,9 @@
 # AR
 
-### requirements
-* opencv
-* numpy >=1.16
-* sym == 1.5.1
-
+### Install the prerequisites
+```
+pip install -r requirements.txt
+```
 
 ### how to run
 * python3 main.py -i [input image] -m [using mode]
