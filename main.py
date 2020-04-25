@@ -81,23 +81,26 @@ F = sy.acos("img_angle") - sy.acos("((x-a1)*(x-a2) + (y-b1)*(y-b2) + (z-c1)*(z-c
 DIFFX = sy.diff(F, sy.Symbol('x'))
 DIFFY = sy.diff(F, sy.Symbol('y'))
 DIFFZ = sy.diff(F, sy.Symbol('z'))
+IMG_ANGLE = sy.Symbol("img_angle")
+X = sy.Symbol('x')
+Y = sy.Symbol('y')
+Z = sy.Symbol('z')
+A1 = sy.Symbol('a1')
+B1 = sy.Symbol('b1')
+C1 = sy.Symbol('c1')
+A2 = sy.Symbol('a2')
+B2 = sy.Symbol('b2')
+C2 = sy.Symbol('c2')
+DIFFX = sy.lambdify([IMG_ANGLE, X, Y, Z, A1, B1, C1, A2, B2, C2], DIFFX)
+DIFFY = sy.lambdify([IMG_ANGLE, X, Y, Z, A1, B1, C1, A2, B2, C2], DIFFY)
+DIFFZ = sy.lambdify([IMG_ANGLE, X, Y, Z, A1, B1, C1, A2, B2, C2], DIFFZ)
 
 
 def angle_diff(img_angle, pointO, pointA, pointB, diff):
     x, y, z = pointO
     a1, b1, c1 = pointA
     a2, b2, c2 = pointB
-    IMG_ANGLE = sy.Symbol("img_angle")
-    X = sy.Symbol('x')
-    Y = sy.Symbol('y')
-    Z = sy.Symbol('z')
-    A1 = sy.Symbol('a1')
-    B1 = sy.Symbol('b1')
-    C1 = sy.Symbol('c1')
-    A2 = sy.Symbol('a2')
-    B2 = sy.Symbol('b2')
-    C2 = sy.Symbol('c2')
-    return sy.N(diff.xreplace({IMG_ANGLE: img_angle, X: x, Y: y, Z: z, A1: a1, B1: b1, C1: c1, A2: a2, B2: b2, C2: c2}))
+    return diff(img_angle, x, y, z, a1, b1, c1, a2, b2, c2)
 
 
 if __name__ == "__main__":
@@ -144,7 +147,7 @@ if __name__ == "__main__":
                 step *= 0.1
     elif args.mode == "differential":
         lr = 0.05
-        for idx in range(500):
+        for idx in range(1000):
             print(idx, end='\r')
             diffX = 0
             diffY = 0
@@ -166,13 +169,16 @@ if __name__ == "__main__":
             CAMERA[0] -= diffX * lr
             CAMERA[1] -= diffY * lr
             CAMERA[2] -= diffZ * lr
-    img_angle_AOB = calc_img_angle(img_center, iconA, iconB, FOCAL)
-    img_angle_BOC = calc_img_angle(img_center, iconB, iconC, FOCAL)
-    img_angle_COA = calc_img_angle(img_center, iconC, iconA, FOCAL)
+    # img_angle_AOB = calc_img_angle(img_center, iconA, iconB, FOCAL)
+    # img_angle_BOC = calc_img_angle(img_center, iconB, iconC, FOCAL)
+    # img_angle_COA = calc_img_angle(img_center, iconC, iconA, FOCAL)
 
-    real_angle_AOB = calc_real_angle(REAL_A, CAMERA, REAL_B)
-    real_angle_BOC = calc_real_angle(REAL_B, CAMERA, REAL_C)
-    real_angle_COA = calc_real_angle(REAL_C, CAMERA, REAL_A)
+    # real_angle_AOB = calc_real_angle(REAL_A, CAMERA, REAL_B)
+    # real_angle_BOC = calc_real_angle(REAL_B, CAMERA, REAL_C)
+    # real_angle_COA = calc_real_angle(REAL_C, CAMERA, REAL_A)
+    # print(img_angle_AOB, real_angle_AOB)
+    # print(img_angle_BOC, real_angle_BOC)
+    # print(img_angle_COA, real_angle_COA)
     print("A position:", REAL_A)
     print("B position:", REAL_B)
     print("C position:", REAL_C)
